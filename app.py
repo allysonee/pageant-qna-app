@@ -3,6 +3,7 @@ import os
 import random
 import time
 import streamlit as st
+import streamlit.components.v1 as components
 
 # ── Page config ────────────────────────────────────────────────────────────────
 st.set_page_config(
@@ -382,6 +383,8 @@ with col_right:
     else:
         timer_seconds = 0
 
+    read_aloud = st.toggle("Read aloud", value=False)
+
 st.markdown("---")
 
 # ── Question picker ────────────────────────────────────────────────────────────
@@ -408,6 +411,19 @@ if st.session_state.question:
         unsafe_allow_html=True,
     )
 
+    if read_aloud:
+        escaped = json.dumps(st.session_state.question)
+        components.html(
+            f"""<script>
+            window.speechSynthesis.cancel();
+            var u = new SpeechSynthesisUtterance({escaped});
+            u.rate = 0.88;
+            u.pitch = 1.05;
+            window.speechSynthesis.speak(u);
+            </script>""",
+            height=0,
+        )
+
     # ── Timer ──────────────────────────────────────────────────────────────────
     if timer_seconds > 0 and st.session_state.timer_running:
         timer_placeholder = st.empty()
@@ -425,6 +441,24 @@ if st.session_state.question:
                     '<div class="timer-display" style="color:#ef4444;">TIME\'S UP!</div>'
                     '<p class="timer-label">Great job — reset and go again</p>',
                     unsafe_allow_html=True,
+                )
+                components.html(
+                    """<script>
+                    (function() {
+                        var ctx = new (window.AudioContext || window.webkitAudioContext)();
+                        var now = ctx.currentTime;
+                        [[1318.51, 0.5, 4.0], [1318.51 * 2.756, 0.14, 1.8], [659.25, 0.18, 3.0]].forEach(function(p) {
+                            var osc = ctx.createOscillator();
+                            var g = ctx.createGain();
+                            osc.connect(g); g.connect(ctx.destination);
+                            osc.type = 'sine'; osc.frequency.value = p[0];
+                            g.gain.setValueAtTime(p[1], now);
+                            g.gain.exponentialRampToValueAtTime(0.001, now + p[2]);
+                            osc.start(now); osc.stop(now + p[2]);
+                        });
+                    })();
+                    </script>""",
+                    height=0,
                 )
             else:
                 mins = remaining // 60
