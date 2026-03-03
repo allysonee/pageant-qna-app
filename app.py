@@ -12,7 +12,7 @@ import streamlit.components.v1 as components
 
 
 async def _synthesize(text: str) -> bytes:
-    communicate = edge_tts.Communicate(text, voice="en-US-JennyNeural", rate="-15%")
+    communicate = edge_tts.Communicate(text, voice="en-US-EmmaNeural", rate="-8%")
     buf = io.BytesIO()
     async for chunk in communicate.stream():
         if chunk["type"] == "audio":
