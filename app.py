@@ -36,100 +36,118 @@ st.set_page_config(
 st.markdown(
     """
     <style>
-    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&display=swap');
+    @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700&display=swap');
 
     html, body, [data-testid="stApp"] {
-        background-color: #faf9f0;
-        color: #131314;
-        font-family: 'Inter', sans-serif;
+        background-color: #FDF5F8;
+        color: #1C1030;
+        font-family: 'Plus Jakarta Sans', sans-serif;
     }
 
-    /* hide the default Streamlit header/footer */
     #MainMenu, footer, header { visibility: hidden; }
 
-    h1 {
-        font-family: 'Inter', sans-serif;
-        font-size: 2.4rem;
-        font-weight: 600;
-        text-align: center;
-        color: #131314;
-        letter-spacing: -0.02em;
-        margin-bottom: 0.1rem;
+    .block-container {
+        padding-top: 3rem !important;
+        padding-bottom: 3rem !important;
+        max-width: 780px !important;
     }
 
-    .subtitle {
+    h1 {
+        font-family: 'Plus Jakarta Sans', sans-serif;
+        font-size: 2rem;
+        font-weight: 700;
         text-align: center;
-        color: #6b6963;
-        font-size: 1rem;
-        font-weight: 300;
-        margin-bottom: 2rem;
+        color: #1C1030;
+        letter-spacing: -0.03em;
+        margin-bottom: 0.25rem;
+    }
+
+    /* Section labels */
+    .section-label {
+        font-size: 0.7rem;
+        font-weight: 700;
+        letter-spacing: 0.12em;
+        text-transform: uppercase;
+        color: #B87A94;
+        margin-bottom: 0.5rem;
     }
 
     /* Question card */
     .question-card {
-        background: #ffffff;
-        border: 1px solid #e8e6de;
-        border-radius: 12px;
-        padding: 2rem 2.4rem;
-        margin: 1.5rem 0;
-        box-shadow: 0 1px 4px rgba(0,0,0,0.06);
+        background: #FFFFFF;
+        border: 1px solid #F0DDE6;
+        border-radius: 20px;
+        padding: 2.5rem 3rem;
+        margin: 2rem 0;
+        box-shadow: 0 4px 24px rgba(28, 16, 48, 0.07);
     }
 
     .question-card p {
-        font-size: 1.25rem;
+        font-size: 1.3rem;
         font-weight: 400;
-        line-height: 1.75;
-        color: #131314;
+        line-height: 1.85;
+        color: #1C1030;
         margin: 0;
+        letter-spacing: -0.01em;
     }
 
-    /* Timer display */
+    /* Timer */
     .timer-display {
         text-align: center;
-        font-size: 3.5rem;
-        font-weight: 600;
-        font-family: 'Inter', sans-serif;
-        letter-spacing: -0.02em;
+        font-size: 3.8rem;
+        font-weight: 700;
+        font-family: 'Plus Jakarta Sans', sans-serif;
+        letter-spacing: -0.04em;
         padding: 0.5rem 0;
     }
 
     .timer-label {
         text-align: center;
-        font-size: 0.8rem;
-        color: #6b6963;
-        letter-spacing: 0.08em;
+        font-size: 0.7rem;
+        color: #B87A94;
+        letter-spacing: 0.12em;
         text-transform: uppercase;
-        margin-top: -0.5rem;
+        margin-top: -0.4rem;
     }
 
-    /* Streamlit button overrides */
+    /* Button */
     .stButton > button {
-        background: #d97757;
-        color: #ffffff;
+        background: #1C1030;
+        color: #FDF5F8;
         border: none;
-        border-radius: 8px;
-        padding: 0.65rem 2rem;
+        border-radius: 12px;
+        padding: 0.75rem 2rem;
         font-size: 0.95rem;
         font-weight: 600;
         width: 100%;
         letter-spacing: 0.01em;
-        transition: opacity 0.2s;
+        font-family: 'Plus Jakarta Sans', sans-serif;
+        transition: background 0.2s;
+        box-shadow: 0 2px 16px rgba(28, 16, 48, 0.18);
     }
     .stButton > button:hover {
-        opacity: 0.88;
-        color: #ffffff;
-        border: none;
+        background: #E0A0B8 !important;
+        color: #1C1030 !important;
+        border: none !important;
     }
 
-    /* Selectbox / radio labels */
+    /* Labels */
     label, .stRadio label, .stSelectbox label {
-        color: #6b6963 !important;
+        color: #B87A94 !important;
         font-size: 0.8rem;
-        letter-spacing: 0.06em;
+        letter-spacing: 0.05em;
+        font-family: 'Plus Jakarta Sans', sans-serif !important;
     }
 
-    /* Divider */
-    hr { border-color: #e8e6de; }
+    /* Toggle */
+    [data-testid="stToggleSwitch"] > div {
+        background-color: #F0DDE6 !important;
+    }
+    [data-testid="stToggleSwitch"][aria-checked="true"] > div {
+        background-color: #1C1030 !important;
+    }
+
+    hr { border-color: #F0DDE6; }
     </style>
     """,
     unsafe_allow_html=True,
@@ -402,8 +420,8 @@ col_topics, col_right = st.columns([3, 2])
 
 with col_topics:
     st.markdown(
-        '<p style="color:#6b6963; font-size:0.8rem; letter-spacing:0.06em; '
-        'margin-bottom:0.4rem;">Topics</p>',
+        '<p style="color:#B87A94; font-size:0.7rem; font-weight:700; letter-spacing:0.12em; '
+        'text-transform:uppercase; margin-bottom:0.5rem;">Topics</p>',
         unsafe_allow_html=True,
     )
     selected_topics = [
@@ -413,8 +431,8 @@ with col_topics:
 
 with col_right:
     st.markdown(
-        '<p style="color:#6b6963; font-size:0.8rem; letter-spacing:0.06em; '
-        'margin-bottom:0.4rem;">Difficulty</p>',
+        '<p style="color:#B87A94; font-size:0.7rem; font-weight:700; letter-spacing:0.12em; '
+        'text-transform:uppercase; margin-bottom:0.5rem;">Difficulty</p>',
         unsafe_allow_html=True,
     )
     selected_difficulties = [
@@ -431,6 +449,7 @@ with col_right:
         timer_seconds = 0
 
     read_aloud = st.toggle("Read aloud", value=False)
+    show_question = st.toggle("Show question", value=True)
 
 # ── Question picker ────────────────────────────────────────────────────────────
 def generate_question(topics: list, difficulties: list) -> str:
@@ -451,10 +470,11 @@ if st.button("Generate New Question", use_container_width=True):
 
 # ── Question card ──────────────────────────────────────────────────────────────
 if st.session_state.question:
-    st.markdown(
-        f'<div class="question-card"><p>{st.session_state.question}</p></div>',
-        unsafe_allow_html=True,
-    )
+    if show_question:
+        st.markdown(
+            f'<div class="question-card"><p>{st.session_state.question}</p></div>',
+            unsafe_allow_html=True,
+        )
 
     if read_aloud:
         if st.session_state.tts_question != st.session_state.question:
@@ -473,21 +493,21 @@ if st.session_state.question:
           }}
           #btn {{
             width: 36px; height: 36px; border-radius: 50%;
-            border: 1.5px solid #d97757; background: transparent;
-            color: #d97757; font-size: 13px; cursor: pointer;
+            border: 1.5px solid #E0A0B8; background: transparent;
+            color: #1C1030; font-size: 13px; cursor: pointer;
             display: flex; align-items: center; justify-content: center;
             flex-shrink: 0;
           }}
-          #btn:hover {{ background: #d97757; color: #fff; }}
+          #btn:hover {{ background: #1C1030; color: #FDF5F8; border-color: #1C1030; }}
           #bar {{
-            flex: 1; height: 3px; background: #e8e6de;
+            flex: 1; height: 3px; background: #F0DDE6;
             border-radius: 999px; cursor: pointer; position: relative;
           }}
           #progress {{
-            height: 100%; background: #d97757;
+            height: 100%; background: #E0A0B8;
             border-radius: 999px; width: 0%;
           }}
-          #time {{ font-size: 0.75rem; color: #6b6963; white-space: nowrap; font-family: 'Inter', sans-serif; letter-spacing: 0.02em; }}
+          #time {{ font-size: 0.75rem; color: #B87A94; white-space: nowrap; font-family: 'Plus Jakarta Sans', sans-serif; letter-spacing: 0.02em; }}
         </style>
         <div class="player">
           <button id="btn">▶</button>
@@ -529,11 +549,11 @@ if st.session_state.question:
 
         for remaining in range(timer_seconds, -1, -1):
             if remaining > 10:
-                color = "#d97757"   # terracotta
+                color = "#1C1030"
             elif remaining > 5:
-                color = "#f97316"   # orange
+                color = "#E0A0B8"
             else:
-                color = "#ef4444"   # red
+                color = "#C45C80"
 
             if remaining == 0:
                 timer_placeholder.markdown(
