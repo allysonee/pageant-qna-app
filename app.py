@@ -148,6 +148,24 @@ st.markdown(
     }
 
     hr { border-color: #F0DDE6; }
+
+    /* Checkboxes */
+    [data-baseweb="checkbox"] [role="checkbox"] {
+        border-color: #E0A0B8 !important;
+        border-radius: 5px !important;
+    }
+    [data-baseweb="checkbox"] [role="checkbox"][aria-checked="true"] {
+        background-color: #1C1030 !important;
+        border-color: #1C1030 !important;
+    }
+    [data-baseweb="checkbox"] [role="checkbox"][aria-checked="true"] svg path {
+        fill: #FDF5F8 !important;
+    }
+    [data-testid="stCheckbox"] span {
+        color: #1C1030 !important;
+        font-family: 'Plus Jakarta Sans', sans-serif !important;
+        font-size: 0.9rem !important;
+    }
     </style>
     """,
     unsafe_allow_html=True,
