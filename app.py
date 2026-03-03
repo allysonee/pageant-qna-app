@@ -12,7 +12,7 @@ import streamlit.components.v1 as components
 
 
 async def _synthesize(text: str) -> bytes:
-    communicate = edge_tts.Communicate(text, voice="en-US-JennyNeural")
+    communicate = edge_tts.Communicate(text, voice="en-US-JennyNeural", rate="-15%")
     buf = io.BytesIO()
     async for chunk in communicate.stream():
         if chunk["type"] == "audio":
@@ -337,6 +337,26 @@ QUESTIONS = {
             "What does justice look like in a world where not everyone starts from the same place?",
         ],
     },
+    "Youth": {
+        "Easy": [
+            "What does it mean to be young in today's world, and how do you make the most of this chapter of your life?",
+            "Who is a young person — past or present — who inspires you, and what can we learn from their story?",
+            "What is one piece of advice you would give to a younger version of yourself?",
+            "How do you balance the pressures of growing up with staying true to who you are?",
+        ],
+        "Medium": [
+            "How can young people turn their passion into purpose before they even graduate?",
+            "What does it mean to lead as a young person in a world that often underestimates your voice?",
+            "How do we create spaces where young people feel safe to fail, learn, and try again?",
+            "What is the most important issue facing young people today that adults are not taking seriously enough?",
+        ],
+        "Hard": [
+            "How do we bridge the gap between generations so that young people's ideas are not just heard but actually implemented?",
+            "What systemic changes would you make to give every young person — regardless of background — a fair start?",
+            "How do we prepare the next generation to lead in a world that is changing faster than our institutions can keep up?",
+            "What does it mean to be a young advocate for change without losing your joy, your rest, or yourself in the process?",
+        ],
+    },
 }
 
 # ── Load expanded question banks from JSON files ───────────────────────────────
@@ -351,6 +371,7 @@ _TOPIC_FILES = {
     "Leadership & Service": "questions_leadership.json",
     "Pageantry":            "questions_pageantry.json",
     "Peace & Global Issues":"questions_peace.json",
+    "Youth":                "questions_youth.json",
 }
 _BASE = os.path.dirname(__file__)
 for _topic, _fname in _TOPIC_FILES.items():
@@ -358,6 +379,8 @@ for _topic, _fname in _TOPIC_FILES.items():
     if os.path.exists(_path):
         with open(_path) as _f:
             QUESTIONS[_topic] = json.load(_f)
+
+QUESTIONS = dict(sorted(QUESTIONS.items()))
 
 # ── Session state defaults ─────────────────────────────────────────────────────
 if "question" not in st.session_state:
