@@ -1,9 +1,29 @@
+import asyncio
+import base64
+import io
 import json
 import os
 import random
 import time
+import edge_tts
+from mutagen.mp3 import MP3
 import streamlit as st
 import streamlit.components.v1 as components
+
+
+async def _synthesize(text: str) -> bytes:
+    communicate = edge_tts.Communicate(text, voice="en-US-JennyNeural")
+    buf = io.BytesIO()
+    async for chunk in communicate.stream():
+        if chunk["type"] == "audio":
+            buf.write(chunk["data"])
+    return buf.getvalue()
+
+
+def speak(text: str) -> tuple[bytes, float]:
+    audio = asyncio.run(_synthesize(text))
+    duration = MP3(io.BytesIO(audio)).info.length
+    return audio, duration
 
 # ── Page config ────────────────────────────────────────────────────────────────
 st.set_page_config(
@@ -344,11 +364,15 @@ if "question" not in st.session_state:
     st.session_state.question = None
 if "timer_running" not in st.session_state:
     st.session_state.timer_running = False
+if "tts_audio" not in st.session_state:
+    st.session_state.tts_audio = None
+if "tts_question" not in st.session_state:
+    st.session_state.tts_question = None
+if "tts_duration" not in st.session_state:
+    st.session_state.tts_duration = 0.0
 
 # ── Header ─────────────────────────────────────────────────────────────────────
 st.markdown("<h1>Pageant Q&A Practice</h1>", unsafe_allow_html=True)
-
-st.markdown("---")
 
 # ── Controls ───────────────────────────────────────────────────────────────────
 col_topics, col_right = st.columns([3, 2])
@@ -385,8 +409,6 @@ with col_right:
 
     read_aloud = st.toggle("Read aloud", value=False)
 
-st.markdown("---")
-
 # ── Question picker ────────────────────────────────────────────────────────────
 def generate_question(topics: list, difficulties: list) -> str:
     pool = [q for t in topics for lvl in difficulties for q in QUESTIONS[t][lvl]]
@@ -412,21 +434,75 @@ if st.session_state.question:
     )
 
     if read_aloud:
-        escaped = json.dumps(st.session_state.question)
-        components.html(
-            f"""<script>
-            window.speechSynthesis.cancel();
-            var u = new SpeechSynthesisUtterance({escaped});
-            u.rate = 0.88;
-            u.pitch = 1.05;
-            window.speechSynthesis.speak(u);
-            </script>""",
-            height=0,
-        )
+        if st.session_state.tts_question != st.session_state.question:
+            audio, duration = speak(st.session_state.question)
+            st.session_state.tts_audio = audio
+            st.session_state.tts_duration = duration
+            st.session_state.tts_question = st.session_state.question
+        audio_b64 = base64.b64encode(st.session_state.tts_audio).decode()
+        components.html(f"""
+        <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500&display=swap" rel="stylesheet">
+        <style>
+          body {{ margin: 0; padding: 0; background: transparent; }}
+          .player {{
+            display: flex; align-items: center; gap: 12px;
+            padding: 0.6rem 0;
+          }}
+          #btn {{
+            width: 36px; height: 36px; border-radius: 50%;
+            border: 1.5px solid #d97757; background: transparent;
+            color: #d97757; font-size: 13px; cursor: pointer;
+            display: flex; align-items: center; justify-content: center;
+            flex-shrink: 0;
+          }}
+          #btn:hover {{ background: #d97757; color: #fff; }}
+          #bar {{
+            flex: 1; height: 3px; background: #e8e6de;
+            border-radius: 999px; cursor: pointer; position: relative;
+          }}
+          #progress {{
+            height: 100%; background: #d97757;
+            border-radius: 999px; width: 0%;
+          }}
+          #time {{ font-size: 0.75rem; color: #6b6963; white-space: nowrap; font-family: 'Inter', sans-serif; letter-spacing: 0.02em; }}
+        </style>
+        <div class="player">
+          <button id="btn">▶</button>
+          <div id="bar"><div id="progress"></div></div>
+          <span id="time">0:00</span>
+        </div>
+        <audio id="audio" autoplay>
+          <source src="data:audio/mp3;base64,{audio_b64}" type="audio/mp3">
+        </audio>
+        <script>
+          var a = document.getElementById('audio');
+          var btn = document.getElementById('btn');
+          var prog = document.getElementById('progress');
+          var timeEl = document.getElementById('time');
+          var bar = document.getElementById('bar');
+          a.onplay = function() {{ btn.textContent = '⏸'; }};
+          a.onpause = function() {{ btn.textContent = '▶'; }};
+          a.ontimeupdate = function() {{
+            var pct = (a.currentTime / a.duration) * 100 || 0;
+            prog.style.width = pct + '%';
+            var s = Math.floor(a.currentTime);
+            timeEl.textContent = Math.floor(s/60) + ':' + ('0'+(s%60)).slice(-2);
+          }};
+          a.onended = function() {{ btn.textContent = '▶'; }};
+          btn.onclick = function() {{ a.paused ? a.play() : a.pause(); }};
+          bar.onclick = function(e) {{
+            var rect = bar.getBoundingClientRect();
+            a.currentTime = ((e.clientX - rect.left) / rect.width) * a.duration;
+          }};
+        </script>
+        """, height=60)
 
     # ── Timer ──────────────────────────────────────────────────────────────────
     if timer_seconds > 0 and st.session_state.timer_running:
         timer_placeholder = st.empty()
+
+        if read_aloud and st.session_state.tts_duration > 0:
+            time.sleep(st.session_state.tts_duration)
 
         for remaining in range(timer_seconds, -1, -1):
             if remaining > 10:
