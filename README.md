@@ -1,43 +1,35 @@
-# 👑 Pageant Q&A Practice App
+# ✦ Katacy
 
-A Streamlit app that generates AI-powered pageant questions by topic with a countdown timer — so you can practice realistic Q&A conditions anytime.
+A pageant Q&A practice app built for competitors who want to train like it's the real thing.
 
-## Setup
+Live at [katacy.com](https://katacy.com)
+
+## Features
+
+- **12 topics** — Women, Environment, Culture & Identity, Mental Health, Education, Technology & Social Media, Leadership, Pageantry, Peace & Global Issues, Youth, LGBTQIA+, General Personality
+- **3 difficulty levels** — Easy, Medium, Hard
+- **Read aloud** — questions spoken via text-to-speech
+- **Countdown timer** — with color changes as time runs low and a bell at the end
+- **Overtime counter** — counts up after time's up so you know how long you went over
+- **Mobile-friendly** — responsive design with slide-in sidebar
+
+## Running locally
 
 ### 1. Install dependencies
 ```bash
 pip install -r requirements.txt
 ```
 
-### 2. Add your API key
-Open `.env` and replace the placeholder with your real key:
-```
-ANTHROPIC_API_KEY=sk-ant-your-key-here
-```
-Get a key at [console.anthropic.com](https://console.anthropic.com).
-
-### 3. Run the app
+### 2. Run the app
 ```bash
-streamlit run app.py
+python katacy.py
 ```
 
-The app opens automatically at `http://localhost:8501`.
+Open `http://localhost:8080` in your browser.
 
-## How to use
-1. Select a **topic** from the dropdown
-2. Choose a **timer** duration
-3. Click **Generate New Question**
-4. Answer out loud — the timer counts down with color changes (purple → orange → red)
-5. Click Generate again for a new question
+## Tech stack
 
-## Topics
-- Women Empowerment
-- Environment
-- Culture & Identity
-- General Personality
-
-## Deploying to Streamlit Community Cloud (free)
-1. Push this repo to GitHub (`.env` is in `.gitignore` — safe to push)
-2. Go to [share.streamlit.io](https://share.streamlit.io) and connect your repo
-3. Add `ANTHROPIC_API_KEY` as a secret in the Streamlit Cloud dashboard
-4. Deploy — your app gets a public URL instantly
+- **Flask** — backend and routing
+- **edge-tts** — text-to-speech audio streaming
+- **Vanilla HTML/CSS/JS** — no frontend framework
+- **Render** — hosting
