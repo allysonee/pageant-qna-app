@@ -656,14 +656,16 @@
       /* Main goes full width */
       .main {
         width: 100%;
-        padding: 5rem 1.25rem 2rem;
+        padding: 4.5rem 1.25rem 1.5rem;
+        justify-content: center;
+        gap: 1.25rem;
       }
 
       /* Question card */
       .question-card {
         padding: 1.5rem 1.25rem;
         max-width: 100%;
-        margin: 1rem auto 5rem;
+        margin: 0 auto;
       }
 
       .question-text {
@@ -675,7 +677,7 @@
         font-size: 5rem;
       }
       .timer-block {
-        margin: 2rem 0;
+        margin: 0;
       }
 
       .btn-generate {
@@ -1000,22 +1002,64 @@
   }
 
   // ── Bell sound ─────────────────────────────────────────────────────────────
+  function makeBellWav() {
+    const sr = 44100, dur = 1.5, n = Math.floor(sr * dur);
+    const tones = [[1318.51, 0.5, 1.5], [3630.5, 0.1, 0.8], [659.25, 0.15, 1.2]];
+    const buf = new Float32Array(n);
+    tones.forEach(([freq, vol, tdur]) => {
+      const tn = Math.floor(sr * tdur);
+      for (let i = 0; i < tn; i++) {
+        buf[i] += Math.sin(2 * Math.PI * freq * i / sr) * vol * Math.exp(-6 * i / tn);
+      }
+    });
+    let max = 0;
+    buf.forEach(v => { if (Math.abs(v) > max) max = Math.abs(v); });
+    if (max > 1) buf.forEach((v, i) => buf[i] = v / max);
+
+    const ab = new ArrayBuffer(44 + n * 2);
+    const dv = new DataView(ab);
+    const ws = (o, s) => { for (let i = 0; i < s.length; i++) dv.setUint8(o + i, s.charCodeAt(i)); };
+    ws(0, 'RIFF'); dv.setUint32(4, 36 + n * 2, true); ws(8, 'WAVEfmt ');
+    dv.setUint32(16, 16, true); dv.setUint16(20, 1, true); dv.setUint16(22, 1, true);
+    dv.setUint32(24, sr, true); dv.setUint32(28, sr * 2, true);
+    dv.setUint16(32, 2, true); dv.setUint16(34, 16, true);
+    ws(36, 'data'); dv.setUint32(40, n * 2, true);
+    for (let i = 0; i < n; i++) dv.setInt16(44 + i * 2, Math.max(-1, Math.min(1, buf[i])) * 0x7FFF, true);
+    return new Blob([ab], { type: 'audio/wav' });
+  }
+
+  let bellAudio = null;
+  function initBell() {
+    if (bellAudio) return;
+    bellAudio = new Audio(URL.createObjectURL(makeBellWav()));
+    bellAudio.load();
+  }
+
+  // Unlock audio with a silent 0.1s WAV so the bell element stays untouched
+  function unlockAudio() {
+    try {
+      const sr = 8000, n = sr / 10;
+      const ab = new ArrayBuffer(44 + n * 2);
+      const dv = new DataView(ab);
+      const ws = (o, s) => { for (let i = 0; i < s.length; i++) dv.setUint8(o + i, s.charCodeAt(i)); };
+      ws(0,'RIFF'); dv.setUint32(4, 36+n*2, true); ws(8,'WAVEfmt ');
+      dv.setUint32(16,16,true); dv.setUint16(20,1,true); dv.setUint16(22,1,true);
+      dv.setUint32(24,sr,true); dv.setUint32(28,sr*2,true);
+      dv.setUint16(32,2,true); dv.setUint16(34,16,true);
+      ws(36,'data'); dv.setUint32(40,n*2,true);
+      const silent = new Audio(URL.createObjectURL(new Blob([ab], {type:'audio/wav'})));
+      silent.play().catch(() => {});
+    } catch(e) {}
+    initBell();
+  }
+  document.addEventListener('touchstart', unlockAudio, { once: true });
+  document.addEventListener('mousedown', unlockAudio, { once: true });
+
   function playBell() {
     if (document.getElementById('toggle-mute-bell').checked) return;
-    try {
-      const ctx = new (window.AudioContext || window.webkitAudioContext)();
-      const now = ctx.currentTime;
-      [[1318.51, 0.5, 4.0], [1318.51 * 2.756, 0.14, 1.8], [659.25, 0.18, 3.0]].forEach(([freq, vol, dur]) => {
-        const osc = ctx.createOscillator();
-        const g   = ctx.createGain();
-        osc.connect(g); g.connect(ctx.destination);
-        osc.type = 'sine';
-        osc.frequency.value = freq;
-        g.gain.setValueAtTime(vol, now);
-        g.gain.exponentialRampToValueAtTime(0.001, now + dur);
-        osc.start(now); osc.stop(now + dur);
-      });
-    } catch(e) {}
+    initBell();
+    bellAudio.currentTime = 0;
+    bellAudio.play().catch(() => {});
   }
 
   // ── Timer ──────────────────────────────────────────────────────────────────
@@ -1123,6 +1167,7 @@
   async function generateQuestion() {
     clearError();
 
+    unlockAudio();
     const topics = getSelectedTopics();
     const difficulties = getSelectedDifficulties();
 
