@@ -302,9 +302,24 @@ TOPICS = list(QUESTIONS.keys())
 
 # ── Routes ─────────────────────────────────────────────────────────────────────
 
+def get_version():
+    # Use Render's built-in commit SHA env var, fallback to local git
+    sha = os.environ.get("RENDER_GIT_COMMIT", "")
+    if sha:
+        return sha[:7]
+    try:
+        import subprocess
+        return subprocess.check_output(
+            ["git", "rev-parse", "--short", "HEAD"], stderr=subprocess.DEVNULL
+        ).decode().strip()
+    except Exception:
+        return "dev"
+
+VERSION = get_version()
+
 @app.route("/")
 def index():
-    return render_template("index.html", topics=TOPICS)
+    return render_template("index.html", topics=TOPICS, version=VERSION)
 
 
 @app.route("/question", methods=["POST"])
